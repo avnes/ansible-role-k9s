@@ -1,0 +1,5 @@
+---
+k9s_version: 0.25.18
+k9s_for_all_users: true
+
+command_shell: bash

@@ -1,0 +1,36 @@
+---
+- name: Install required software
+  package:
+    name: unzip
+    state: present
+
+- name: Set download directory if install only for the user
+  set_fact:
+    k9s_runtime_dir: "{{ ansible_user_dir }}/bin"
+  when: not k9s_for_all_users | bool
+
+- name: Set download directory for all users to use
+  set_fact:
+    k9s_runtime_dir: "/usr/local/bin"
+  when: k9s_for_all_users | bool
+
+- name: Create bin directory in users home if necessary for local install
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/bin"
+    state: directory
+    mode: 0755
+  when: not k9s_for_all_users | bool
+
+- name: Download and unzip file
+  unarchive:
+    src: "https://github.com/derailed/k9s/releases/download/v{{ k9s_version }}/k9s_Linux_x86_64.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
+  changed_when: False
+
+- name: Copy file to runtime directory
+  copy:
+    src: "/tmp/k9s"
+    dest: "{{ k9s_runtime_dir }}"
+    mode: 0755
+    remote_src: yes
